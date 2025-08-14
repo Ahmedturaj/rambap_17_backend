@@ -69,18 +69,10 @@ The application is built with a modern frontend, a lightweight backend, and secu
 git clone https://github.com/yourusername/rambap_17.git
 cd rambap_17
 2️⃣ Install dependencies
-Backend:
 
-
-
-cd backend
+cd backend (github clone link)
 npm install
-Frontend:
 
-
-
-cd frontend
-npm install
 3️⃣ Configure environment variables
 Create a .env file in both backend and frontend folders and set:
 
@@ -122,6 +114,6 @@ Regular updates every 2–3 days during development.
 📜 License
 This project is licensed for demonstration purposes only.
 
-👨‍💻 Author
+👨‍💻 Developer
 Sheikh Toukir Ahmed Turaj
-Full-Stack Developer
+Backend Developer
