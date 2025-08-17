@@ -5,39 +5,45 @@ import bcrypt from 'bcrypt';
 import { accessTokenExpires, accessTokenSecrete, refreshTokenExpires, refreshTokenSecrete } from '../../core/config/config.js';
 
 
-const AddressSchema = new mongoose.Schema({
-  country: { type: String, default: '' },
-  cityState: { type: String, default: '' },
-  roadArea: { type: String, default: '' },
-  postalCode: { type: String, default: '' },
-  taxId: { type: String, default: '' }
+const personalInfoSchema = new mongoose.Schema({
+  firstName: { type: String, default: '' },
+  lastName: { type: String, default: '' },
+  dateOfBirth: { type: Number, default: null },
+  gender: { type: String, default: '' }
 }, { _id: false });
 
+const AddressSchema = new mongoose.Schema({
+  address: { type: String, default: '' },
+  city: { type: String, default: '' },
+  state: { type: String, default: '' },
+  zipCode: { type: String, default: '' },
+}, { _id: false });
+
+const FinancialInfoSchema= new mongoose.Schema({
+  annualIncome:{type:Number, default:''},
+  employmantStatus:{type:String, enum:["employee", "unemployee"], default:''},
+  ellectricityBill:{
+    type:Number,
+    default:''
+  }
+  
+}, {_id:false})
 
 const UserSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    phone:{type:Number, required:true}
     password: { type: String, required: true },
-    username: { type: String },
-    dob: { type: Date, default: null },
-    gender: {
-      type: String,
-      enum: ['male', 'female', 'other'],
-      default: 'male'
-    },
+
 
     role: {
       type: String,
       default: RoleType.USER,
       enum: [RoleType.USER, RoleType.ADMIN],
     },
-
-    stripeAccountId: { type: String, default: null },
-
-    bio: { type: String, default: '' },
+    personalInfo: { type: personalInfoSchema, default: () => ({}) },
     address: { type: AddressSchema, default: () => ({}) },
-
+    financeialInfo: { type: FinancialInfoSchema, default: () => ({}) },
     profileImage: { type: String, default: '' },
     multiProfileImage: { type: [String], default: [] },
     pdfFile: { type: String, default: '' },
