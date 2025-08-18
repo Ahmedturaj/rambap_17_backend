@@ -14,8 +14,8 @@ export const registerUserService = async ({
   if (existingUser) throw new Error('User already registered.');
 
   const newUser = new User({
-    name,
     email,
+    phone,
     password,
   });
 
