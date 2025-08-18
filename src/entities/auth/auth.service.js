@@ -6,8 +6,8 @@ import verificationCodeTemplate from '../../lib/emailTemplates.js';
 
 
 export const registerUserService = async ({
-  name,
   email,
+  phone,
   password
 }) => {
   const existingUser = await User.findOne({ email });
@@ -22,7 +22,7 @@ export const registerUserService = async ({
   const user = await newUser.save();
 
   const { _id, role, profileImage } = user;
-  return { _id, name, email, role,  profileImage };
+  return { _id, phone, email, role,  profileImage };
 };
 
 
