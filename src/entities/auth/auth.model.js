@@ -39,7 +39,6 @@ const UserSchema = new mongoose.Schema({
     enum: [RoleType.USER, RoleType.ADMIN],
     default: RoleType.USER,
   },
-
   personalInfo: { type: personalInfoSchema, default: () => ({}) },
   address: { type: addressSchema, default: () => ({}) },
   financialInfo: { type: financialInfoSchema, default: () => ({}) }, // fixed typo
@@ -47,7 +46,23 @@ const UserSchema = new mongoose.Schema({
   profileImage: { type: String, default: '' },
   multiProfileImage: { type: [String], default: [] },
   pdfFile: { type: String, default: '' },
-
+  decision: {
+    isApproved: {
+      type: Boolean,
+      default: false,
+      approveDetail: {
+        loanAmount: { type: Number, default: 0 },
+        interestRate: { type: Number, default: 0 },
+        term: { type: Number, default: 0 }
+      }
+    },
+    isRejected: {
+      type: Boolean,
+      default: false,
+      rejectionReason: { type: String, default: '' }
+    },
+    notes: { type: String, default: '' }
+  },
   otp: { type: String, default: null },
   otpExpires: { type: Date, default: null },
 
