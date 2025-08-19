@@ -26,7 +26,7 @@ const financialInfoSchema = new mongoose.Schema({
   electricityBill: { type: Number, default: 0, required: true },
   mobileBalance: { type: Number, default: 0 }, // added for credit score calculation
   existingLoan: {
-    hasLoan: { type: Boolean, enum: [true, false], default: false },
+    hasLoan: { type: Boolean, default: false },
     loanAmount: { type: Number, default: 0 }, // only relevant if hasLoan = true
   },
 }, { _id: false });
@@ -53,21 +53,19 @@ const UserSchema = new mongoose.Schema({
   decision: {
     isApproved: {
       type: Boolean,
-      enum: [true, false],
       default: false,
-    },
-    approveDetail: {
-      loanAmount: { type: Number, default: 0 },
-      interestRate: { type: Number, default: 0 },
-      term: { type: Number, default: 0 },
-      notes: { type: String, default: '' }
+      approveDetail: {
+        loanAmount: { type: Number, default: 0 },
+        interestRate: { type: Number, default: 0 },
+        term: { type: Number, default: 0 },
+        notes: { type: String, default: '' }
+      }
     },
     isRejected: {
       type: Boolean,
-      enum: [true, false],
       default: false,
-    },
-    rejectionReason: { type: String, default: '' },
+      rejectionReason: { type: String, default: '' }
+    }
   },
   otp: { type: String, default: null },
   otpExpires: { type: Date, default: null },
