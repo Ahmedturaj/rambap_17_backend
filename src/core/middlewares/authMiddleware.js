@@ -56,8 +56,8 @@ const adminMiddleware = (req, res, next) => {
   }
   const { role } = req.user;
 
-  if (role !== "Lender") {
-    generateResponse(res, 403, false, 'Lender access only', null);
+  if (role !== "ADMIN") {
+    generateResponse(res, 403, false, 'Admin access only', null);
   }
 
   next();
