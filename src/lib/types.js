@@ -1,6 +1,6 @@
 const RoleType = Object.freeze({
-  USER: 'CLIENT',
-  ADMIN: 'LENDER'
+  USER: 'USER',
+  ADMIN: 'ADMIN'
 });
 
 export default RoleType;

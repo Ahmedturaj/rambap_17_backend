@@ -9,7 +9,7 @@ import fs from "fs";
 export const getAllUsers = async ({ page = 1, limit = 10, search, date }) => {
   const filter = createFilter(search, date);
   const totalUsers = await User.countDocuments(filter);
-  const users = await User.find(filter)
+  const users = await User.find({ ...filter, role: RoleType.USER })
     .select("-password -createdAt -updatedAt -__v -verificationCode -verificationCodeExpires")
     .sort({ createdAt: -1 })
     .skip((page - 1) * limit)
@@ -62,14 +62,52 @@ export const getUserById = async (userId) => {
 
 // Update user
 export const updateUser = async ({ id, ...updateData }) => {
-  const updatedUser = await User.findByIdAndUpdate(id, updateData, {
-    new: true,
-    runValidators: true,
-  }).select("-password -createdAt -updatedAt -__v -verificationCode -verificationCodeExpires");
+  // Flatten nested objects if needed
+  const updateFields = {};
+
+  if (updateData.personalInfo) {
+    for (const key in updateData.personalInfo) {
+      updateFields[`personalInfo.${key}`] = updateData.personalInfo[key];
+    }
+  }
+
+  if (updateData.address) {
+    for (const key in updateData.address) {
+      updateFields[`address.${key}`] = updateData.address[key];
+    }
+  }
+
+  if (updateData.financialInfo) {
+    for (const key in updateData.financialInfo) {
+      // handle nested existingLoan separately
+      if (key === "existingLoan") {
+        for (const loanKey in updateData.financialInfo.existingLoan) {
+          updateFields[`financialInfo.existingLoan.${loanKey}`] =
+            updateData.financialInfo.existingLoan[loanKey];
+        }
+      } else {
+        updateFields[`financialInfo.${key}`] = updateData.financialInfo[key];
+      }
+    }
+  }
+
+  // Spread other top-level fields if needed (like profileImage, language, etc.)
+  for (const key in updateData) {
+    if (!["personalInfo", "address", "financialInfo"].includes(key)) {
+      updateFields[key] = updateData[key];
+    }
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    id,
+    { $set: updateFields },
+    { new: true, runValidators: true }
+  ).select("-password -createdAt -updatedAt -__v -verificationCode -verificationCodeExpires");
 
   if (!updatedUser) {
-    throw new Error('User not found');
+    throw new Error("User not found");
   }
+
   return updatedUser;
 };
 
