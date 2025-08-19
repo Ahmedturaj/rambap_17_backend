@@ -26,7 +26,7 @@ const financialInfoSchema = new mongoose.Schema({
   electricityBill: { type: Number, default: 0, required: true },
   mobileBalance: { type: Number, default: 0 }, // added for credit score calculation
   existingLoan: {
-    hasLoan: { type: Boolean, default: false },
+    hasLoan: { type: Boolean,enum:[true,false], default: false },
     loanAmount: { type: Number, default: 0 }, // only relevant if hasLoan = true
   },
 }, { _id: false });
@@ -52,8 +52,7 @@ const UserSchema = new mongoose.Schema({
   pdfFile: { type: String, default: '' },
   decision: {
     isApproved: {
-      type: Boolean,
-      default: false,
+      hasActive: { type: Boolean, enum: [true, false], default: false },
       approveDetail: {
         loanAmount: { type: Number, default: 0 },
         interestRate: { type: Number, default: 0 },
@@ -62,8 +61,7 @@ const UserSchema = new mongoose.Schema({
       }
     },
     isRejected: {
-      type: Boolean,
-      default: false,
+      hasRejected: { type: Boolean, enum: [true, false], default: false },
       rejectionReason: { type: String, default: '' }
     }
   },
