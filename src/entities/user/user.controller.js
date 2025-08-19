@@ -1,5 +1,5 @@
 import { generateResponse } from "../../lib/responseFormate.js";
-import { 
+import {
   getAllUsers,
   getAllAdmins,
   getAllSellers,
@@ -13,13 +13,13 @@ import {
   createMultipleAvatar,
   updateMultipleAvatar,
   deleteMultipleAvatar,
-  
+
   createUserPDF,
   updateUserPDF,
   deleteUserPDF
 
 } from "./user.service.js";
-
+import mongoose from "mongoose";
 
 export const getAllUsersController = async (req, res) => {
   try {
@@ -65,15 +65,38 @@ export const getUserByIdController = async (req, res) => {
 };
 
 
+// export const updateUserController = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const updatedUser = await updateUser({ id, ...req.body });
+//     generateResponse(res, 200, true, 'User updated successfully', updatedUser);
+//   } catch (error) {
+//     generateResponse(res, 500, false, 'Failed to update user', null);
+//   }
+// };
+
+
+
+
 export const updateUserController = async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return generateResponse(res, 400, false, "Invalid user ID", null);
+    }
+
     const updatedUser = await updateUser({ id, ...req.body });
-    generateResponse(res, 200, true, 'User updated successfully', updatedUser);
+    generateResponse(res, 200, true, "User updated successfully", updatedUser);
   } catch (error) {
-    generateResponse(res, 500, false, 'Failed to update user', null);
+    console.error("Update error:", error);
+    generateResponse(res, 500, false, error.message || "Failed to update user", null);
   }
 };
+
+
+
+
 
 
 export const deleteUserController = async (req, res) => {
@@ -90,7 +113,7 @@ export const deleteUserController = async (req, res) => {
 export const createAvatarController = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     if (!req.files?.profileImage) {
       return generateResponse(res, 400, false, 'Profile image is required');
     }
@@ -111,7 +134,7 @@ export const updateAvatarProfileController = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await updateAvatarProfile(id, req.files);
-    generateResponse(res, 200, true, 'Avatar updated successfully', user); 
+    generateResponse(res, 200, true, 'Avatar updated successfully', user);
   } catch (error) {
     console.error(error);
     generateResponse(res, 500, false, 'Failed to update avatar', error.message);
@@ -133,8 +156,8 @@ export const deleteAvatarController = async (req, res) => {
 
 export const createMultipleAvatarController = async (req, res) => {
   try {
-    const { id } = req.params;    
-    const user = await createMultipleAvatar(id, req.files); 
+    const { id } = req.params;
+    const user = await createMultipleAvatar(id, req.files);
     generateResponse(res, 200, true, 'Multiple avatars uploaded successfully', user);
   } catch (error) {
     generateResponse(res, 500, false, 'Failed to upload multiple avatars', null);
