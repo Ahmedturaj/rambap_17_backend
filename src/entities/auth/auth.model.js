@@ -4,14 +4,14 @@ import jwt from "jsonwebtoken";
 import bcrypt from 'bcrypt';
 import { accessTokenExpires, accessTokenSecrete, refreshTokenExpires, refreshTokenSecrete } from '../../core/config/config.js';
 
-// ---------- SCHEMAS ----------
 
 const personalInfoSchema = new mongoose.Schema({
   firstName: { type: String, default: '' },
   lastName: { type: String, default: '' },
-  dateOfBirth: { type: Number, default: null }, // can be timestamp
+  dateOfBirth: { type: Date, default: null }, 
   gender: { type: String, default: '' }
 }, { _id: false });
+
 
 const addressSchema = new mongoose.Schema({
   address: { type: String, default: '' },
@@ -20,16 +20,34 @@ const addressSchema = new mongoose.Schema({
   zipCode: { type: String, default: '' },
 }, { _id: false });
 
+
 const financialInfoSchema = new mongoose.Schema({
   annualIncome: { type: Number, default: 0 },
   valueOfLandOwnership: { type: Number, default: 0, required: true },
   electricityBill: { type: Number, default: 0, required: true },
-  mobileBalance: { type: Number, default: 0 }, // added for credit score calculation
+  mobileBalance: { type: Number, default: 0 }, 
   existingLoan: {
-    hasLoan: { type: Boolean,enum:[true,false], default: false },
-    loanAmount: { type: Number, default: 0 }, // only relevant if hasLoan = true
+    hasLoan: { type: Boolean, default: false },
+    loanAmount: { type: Number, default: 0 }, 
   },
 }, { _id: false });
+
+
+const decisionSchema = new mongoose.Schema({
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'pending'
+  },
+  approveDetail: {
+    loanAmount: { type: Number },
+    interestRate: { type: Number },
+    term: { type: Number },
+    notes: { type: String }
+  },
+  rejectionReason: { type: String }
+}, { _id: false });
+
 
 // ---------- USER SCHEMA ----------
 
@@ -45,26 +63,12 @@ const UserSchema = new mongoose.Schema({
   },
   personalInfo: { type: personalInfoSchema, default: () => ({}) },
   address: { type: addressSchema, default: () => ({}) },
-  financialInfo: { type: financialInfoSchema, default: () => ({}) }, // fixed typo
+  financialInfo: { type: financialInfoSchema, default: () => ({}) },
 
   profileImage: { type: String, default: '' },
   multiProfileImage: { type: [String], default: [] },
   pdfFile: { type: String, default: '' },
-  decision: {
-    isApproved: {
-      hasActive: { type: Boolean, enum: [true, false], default: false },
-      approveDetail: {
-        loanAmount: { type: Number, default: 0 },
-        interestRate: { type: Number, default: 0 },
-        term: { type: Number, default: 0 },
-        notes: { type: String, default: '' }
-      }
-    },
-    isRejected: {
-      hasRejected: { type: Boolean, enum: [true, false], default: false },
-      rejectionReason: { type: String, default: '' }
-    }
-  },
+  decision: { type: decisionSchema, default: () => ({}) },
   otp: { type: String, default: null },
   otpExpires: { type: Date, default: null },
 
@@ -77,6 +81,7 @@ const UserSchema = new mongoose.Schema({
   language: { type: String, default: 'en' }
 
 }, { timestamps: true });
+
 
 // ---------- PASSWORD HASHING ----------
 UserSchema.pre("save", async function (next) {
@@ -100,6 +105,6 @@ UserSchema.methods.generateRefreshToken = function (payload) {
   return jwt.sign(payload, refreshTokenSecrete, { expiresIn: refreshTokenExpires });
 };
 
-// ---------- EXPORT MODEL ----------
+
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 export default User;
