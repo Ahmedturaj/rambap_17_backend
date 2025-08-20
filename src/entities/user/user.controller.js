@@ -1,4 +1,5 @@
 import { generateResponse } from "../../lib/responseFormate.js";
+import { calculateCreditScore } from "../../lib/calculateScore.js";
 import {
   getAllUsers,
   getAllAdmins,
@@ -57,12 +58,42 @@ export const getAllSelleresController = async (req, res) => {
 export const getUserByIdController = async (req, res) => {
   try {
     const { id } = req.params;
+
+    // Fetch user
     const user = await getUserById(id);
-    generateResponse(res, 200, true, 'User fetched successfully', user);
+    if (!user) {
+      return generateResponse(res, 404, false, "User not found", null);
+    }
+
+    // Calculate credit score
+    const creditScore = calculateCreditScore(user);
+
+    // Send both user + credit score
+    generateResponse(res, 200, true, "User fetched successfully", {
+      user,
+      creditScore,
+    });
   } catch (error) {
-    generateResponse(res, 500, false, 'Failed to fetch user', null);
+    console.error("Error in getUserByIdController:", error);
+    generateResponse(res, 500, false, "Failed to fetch user", null);
   }
 };
+
+
+
+
+
+
+
+// export const getUserByIdController = async (req, res) => {
+//   try {
+//     const { id } = req.params;
+//     const user = await getUserById(id);
+//     generateResponse(res, 200, true, 'User fetched successfully', user);
+//   } catch (error) {
+//     generateResponse(res, 500, false, 'Failed to fetch user', null);
+//   }
+// };
 
 
 // export const updateUserController = async (req, res) => {
