@@ -30,7 +30,7 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       page = 1,
       limit = 10,
       search = "",
-      sort = "newest", // newest | oldest | incomeHigh | incomeLow | scoreHigh | scoreLow
+      sort = "newest",
       role,
       minIncome,
       maxIncome,
@@ -48,9 +48,11 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       if (minIncome) query.annualIncome.$gte = Number(minIncome);
       if (maxIncome) query.annualIncome.$lte = Number(maxIncome);
     }
+
     if (decisionStatus) {
       query["decision.status"] = decisionStatus;
     }
+
     // ----------- Search (name/email) -----------
     if (search) {
       query.$or = [
@@ -69,9 +71,9 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     else if (sort === "oldest") sortOption = { createdAt: 1 };
     else if (sort === "incomeHigh") sortOption = { annualIncome: -1 };
     else if (sort === "incomeLow") sortOption = { annualIncome: 1 };
-    // score sort handled later since it's calculated
+    // score sort handled later
 
-    // ----------- Fetch Data -----------
+    // ----------- Fetch Users -----------
     let users = await User.find(query)
       .sort(sortOption)
       .skip(skip)
@@ -91,7 +93,6 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       users = users.filter((u) => u.creditScore.category === category);
     }
 
-
     // ----------- Score Sorting (if chosen) -----------
     if (sort === "scoreHigh") {
       users = users.sort((a, b) => b.creditScore.overallPercent - a.creditScore.overallPercent);
@@ -103,6 +104,11 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
+    // ----------- Count by Decision Status -----------
+    const totalPending = await User.countDocuments({ "decision.status": "pending" });
+    const totalApproved = await User.countDocuments({ "decision.status": "approved" });
+    const totalRejected = await User.countDocuments({ "decision.status": "rejected" });
+
     // ----------- Response -----------
     const paginationInfo = {
       totalUsers,
@@ -111,7 +117,13 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       limit: Number(limit),
     };
 
-    generateResponse(res, 200, true, "Users fetched successfully", { users, paginationInfo });
+    const decisionCounts = {
+      pending: totalPending,
+      approved: totalApproved,
+      rejected: totalRejected
+    };
+
+    generateResponse(res, 200, true, "Users fetched successfully", { users, paginationInfo, decisionCounts });
   } catch (error) {
     console.error(error);
     generateResponse(res, 500, false, "Failed to fetch users", null);
