@@ -125,14 +125,14 @@ export const deleteUser = async (userId) => {
 // Upload avatar
 export const createAvatarProfile = async (id, files) => {
 
-  const userFound = await User.findById({_id: id});
+  const userFound = await User.findById({ _id: id });
 
   if (!userFound) throw new Error('User not found');
 
   const profileImage = files.profileImage[0];
-  
+
   // Generate secure filename
-  const sanitizedTitle = `${userFound._id}-${Date.now()}`; 
+  const sanitizedTitle = `${userFound._id}-${Date.now()}`;
   let cloudinaryResult;
 
   try {
@@ -152,7 +152,7 @@ export const createAvatarProfile = async (id, files) => {
     throw error;
   } finally {
     // Always clean up temp file
-    fs.unlink(profileImage.path, () => {}); 
+    fs.unlink(profileImage.path, () => { });
   }
 };
 
@@ -180,7 +180,7 @@ export const updateAvatarProfile = async (id, files) => {
     .toLowerCase()
     .replace(/\s+/g, "-")
     .replace(/[?&=]/g, "");
-  
+
 
   const imgUrl = await cloudinaryUpload(profileImage.path, sanitizedTitle, "user-profile");
   if (imgUrl === "file upload failed") {
@@ -203,11 +203,11 @@ export const deleteAvatarProfile = async (id) => {
     // Extract public ID from URL 
     const imageUrl = userFound.profileImage;
     const publicId = imageUrl.split('/').slice(-2).join('/').split('.')[0];
-    
+
     // Delete from Cloudinary
     const cloudinaryResult = await cloudinary.uploader.destroy(publicId);
     console.log('Cloudinary deletion result:', cloudinaryResult);
-    
+
     // Verify deletion was successful
     if (cloudinaryResult.result !== 'ok') {
       throw new Error(`Cloudinary deletion failed: ${cloudinaryResult.result}`);
@@ -223,7 +223,7 @@ export const deleteAvatarProfile = async (id) => {
     return updatedUser;
   } catch (error) {
     console.error('Error in deleteAvatarProfile:', error);
-    throw error; 
+    throw error;
   }
 };
 
@@ -297,7 +297,7 @@ export const deleteMultipleAvatar = async (id) => {
     .select("-password -createdAt -updatedAt -__v -verificationCode -verificationCodeExpires");
 
   return updatedUser;
-};  
+};
 
 
 // Upload user PDF
@@ -364,7 +364,7 @@ export const deleteUserPDF = async (id) => {
   }
 
   if (!userFound.pdfFile) {
-    throw new Error('No PDF file to delete'); 
+    throw new Error('No PDF file to delete');
   }
 
   const publicId = userFound.pdfFile.split('/').pop().split('.')[0];
