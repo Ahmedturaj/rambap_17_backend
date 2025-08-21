@@ -26,7 +26,6 @@ export const updateUserDecisionController = async (req, res) => {
 
 export const getAllUsersControllerByAdmin = async (req, res) => {
   try {
-    // ----------- Query Params -----------
     const {
       page = 1,
       limit = 10,
@@ -35,13 +34,14 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       role,
       minIncome,
       maxIncome,
+      minScore,
+      maxScore,
       decisionStatus,
-      category // Faible | Moyen | Élevé
+      category
     } = req.query;
 
     const query = {};
 
-    // ----------- Filtering -----------
     if (role) query.role = role;
 
     if (minIncome || maxIncome) {
@@ -54,7 +54,6 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       query["decision.status"] = decisionStatus;
     }
 
-    // ----------- Search (name/email/city) -----------
     if (search) {
       query.$or = [
         { "personalInfo.firstName": { $regex: search, $options: "i" } },
@@ -64,24 +63,19 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       ];
     }
 
-    // ----------- Pagination -----------
     const skip = (Number(page) - 1) * Number(limit);
 
-    // ----------- Sorting -----------
     let sortOption = {};
     if (sort === "newest") sortOption = { createdAt: -1 };
     else if (sort === "oldest") sortOption = { createdAt: 1 };
     else if (sort === "incomeHigh") sortOption = { "financialInfo.annualIncome": -1 };
     else if (sort === "incomeLow") sortOption = { "financialInfo.annualIncome": 1 };
-    // score sort handled later
 
-    // ----------- Fetch Users -----------
     let users = await User.find(query)
       .sort(sortOption)
       .skip(skip)
       .limit(Number(limit));
 
-    // ----------- Add Score + Category -----------
     users = users.map((user) => {
       const scoreData = calculateCreditScore(user);
       return {
@@ -90,28 +84,32 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       };
     });
 
-    // ----------- Score Filtering (category) -----------
+    if (minScore || maxScore) {
+      users = users.filter((u) => {
+        const score = u.creditScore.totalScore;
+        if (minScore && score < Number(minScore)) return false;
+        if (maxScore && score > Number(maxScore)) return false;
+        return true;
+      });
+    }
+
     if (category) {
       users = users.filter((u) => u.creditScore.category === category);
     }
 
-    // ----------- Score Sorting (if chosen) -----------
     if (sort === "scoreHigh") {
       users = users.sort((a, b) => b.creditScore.overallPercent - a.creditScore.overallPercent);
     } else if (sort === "scoreLow") {
       users = users.sort((a, b) => a.creditScore.overallPercent - b.creditScore.overallPercent);
     }
 
-    // ----------- Count for Pagination -----------
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
-    // ----------- Count by Decision Status -----------
     const totalPending = await User.countDocuments({ "decision.status": "pending" });
     const totalApproved = await User.countDocuments({ "decision.status": "approved" });
     const totalRejected = await User.countDocuments({ "decision.status": "rejected" });
 
-    // ----------- Response -----------
     const paginationInfo = {
       totalUsers,
       currentPage: Number(page),
@@ -131,4 +129,5 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     generateResponse(res, 500, false, "Failed to fetch users", null);
   }
 };
+
 
