@@ -19,7 +19,7 @@ router.get("/all-sellers", verifyToken, adminMiddleware, getAllSelleresControlle
 
 // user
 router.get("/:id", verifyToken, getUserByIdController);
-router.put("/:id", verifyToken, updateUserController);
+router.put("/:id", updateUserController);
 router.delete("/:id", verifyToken, adminMiddleware,  deleteUserController);
 
 // avatar
