@@ -23,6 +23,7 @@ export const updateUserDecisionController = async (req, res) => {
 };
 
 
+
 export const getAllUsersControllerByAdmin = async (req, res) => {
   try {
     // ----------- Query Params -----------
@@ -44,20 +45,21 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     if (role) query.role = role;
 
     if (minIncome || maxIncome) {
-      query.annualIncome = {};
-      if (minIncome) query.annualIncome.$gte = Number(minIncome);
-      if (maxIncome) query.annualIncome.$lte = Number(maxIncome);
+      query["financialInfo.annualIncome"] = {};
+      if (minIncome) query["financialInfo.annualIncome"].$gte = Number(minIncome);
+      if (maxIncome) query["financialInfo.annualIncome"].$lte = Number(maxIncome);
     }
 
     if (decisionStatus) {
       query["decision.status"] = decisionStatus;
     }
 
-    // ----------- Search (name/email) -----------
+    // ----------- Search (name/email/city) -----------
     if (search) {
       query.$or = [
         { "personalInfo.firstName": { $regex: search, $options: "i" } },
         { "personalInfo.lastName": { $regex: search, $options: "i" } },
+        { "address.city": { $regex: search, $options: "i" } },
         { email: { $regex: search, $options: "i" } },
       ];
     }
@@ -69,8 +71,8 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     let sortOption = {};
     if (sort === "newest") sortOption = { createdAt: -1 };
     else if (sort === "oldest") sortOption = { createdAt: 1 };
-    else if (sort === "incomeHigh") sortOption = { annualIncome: -1 };
-    else if (sort === "incomeLow") sortOption = { annualIncome: 1 };
+    else if (sort === "incomeHigh") sortOption = { "financialInfo.annualIncome": -1 };
+    else if (sort === "incomeLow") sortOption = { "financialInfo.annualIncome": 1 };
     // score sort handled later
 
     // ----------- Fetch Users -----------
@@ -129,3 +131,4 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     generateResponse(res, 500, false, "Failed to fetch users", null);
   }
 };
+
