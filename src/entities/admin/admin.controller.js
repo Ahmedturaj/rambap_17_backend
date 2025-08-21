@@ -32,17 +32,18 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       limit = 10,
       search = "",
       sort = "newest",
-      role,
       minIncome,
       maxIncome,
       decisionStatus,
-      category // Faible | Moyen | Élevé
+      category,    // Faible | Moyen | Élevé
+      minScore,    // e.g., 50
+      maxScore     // e.g., 80
     } = req.query;
 
     const query = {};
 
     // ----------- Filtering -----------
-    if (role) query.role = role;
+    query.role = "USER";
 
     if (minIncome || maxIncome) {
       query["financialInfo.annualIncome"] = {};
@@ -54,7 +55,6 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       query["decision.status"] = decisionStatus;
     }
 
-    // ----------- Search (name/email/city) -----------
     if (search) {
       query.$or = [
         { "personalInfo.firstName": { $regex: search, $options: "i" } },
@@ -71,9 +71,6 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     let sortOption = {};
     if (sort === "newest") sortOption = { createdAt: -1 };
     else if (sort === "oldest") sortOption = { createdAt: 1 };
-    else if (sort === "incomeHigh") sortOption = { "financialInfo.annualIncome": -1 };
-    else if (sort === "incomeLow") sortOption = { "financialInfo.annualIncome": 1 };
-    // score sort handled later
 
     // ----------- Fetch Users -----------
     let users = await User.find(query)
@@ -90,16 +87,20 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       };
     });
 
-    // ----------- Score Filtering (category) -----------
+    // ----------- Filter by Category -----------
     if (category) {
       users = users.filter((u) => u.creditScore.category === category);
     }
 
-    // ----------- Score Sorting (if chosen) -----------
-    if (sort === "scoreHigh") {
-      users = users.sort((a, b) => b.creditScore.overallPercent - a.creditScore.overallPercent);
-    } else if (sort === "scoreLow") {
-      users = users.sort((a, b) => a.creditScore.overallPercent - b.creditScore.overallPercent);
+    // ----------- Filter by Score Range -----------
+    if (minScore || maxScore) {
+      users = users.filter((u) => {
+        const score = u.creditScore.overallPercent;
+        if (minScore && maxScore) return score >= Number(minScore) && score <= Number(maxScore);
+        if (minScore) return score >= Number(minScore);
+        if (maxScore) return score <= Number(maxScore);
+        return true;
+      });
     }
 
     // ----------- Count for Pagination -----------
