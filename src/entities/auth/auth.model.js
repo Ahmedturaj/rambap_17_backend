@@ -64,7 +64,7 @@ const UserSchema = new mongoose.Schema({
   personalInfo: { type: personalInfoSchema, default: () => ({}) },
   address: { type: addressSchema, default: () => ({}) },
   financialInfo: { type: financialInfoSchema, default: () => ({}) },
-
+  requestedLoan: { type: Number, default: 0 },
   profileImage: { type: String, default: '' },
   multiProfileImage: { type: [String], default: [] },
   pdfFile: { type: String, default: '' },

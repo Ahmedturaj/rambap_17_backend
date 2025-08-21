@@ -12,7 +12,7 @@ import {
 
 
 export const registerUser = async (req, res, next) => {
-  const { name,email, phone, password } = req.body;
+  const { email, phone, password } = req.body;
   try {
 
     const data = await registerUserService({ email, phone,password });
