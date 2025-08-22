@@ -62,43 +62,58 @@ export const getUserById = async (userId) => {
 
 // Update user
 export const updateUser = async ({ id, ...updateData }) => {
-  // Flatten nested objects if needed
   const updateFields = {};
 
+  // ---------- Personal Info ----------
   if (updateData.personalInfo) {
-    for (const key in updateData.personalInfo) {
-      updateFields[`personalInfo.${key}`] = updateData.personalInfo[key];
-    }
+    Object.entries(updateData.personalInfo).forEach(([key, value]) => {
+      updateFields[`personalInfo.${key}`] = value;
+    });
   }
 
+  // ---------- Address ----------
   if (updateData.address) {
-    for (const key in updateData.address) {
-      updateFields[`address.${key}`] = updateData.address[key];
-    }
+    Object.entries(updateData.address).forEach(([key, value]) => {
+      updateFields[`address.${key}`] = value;
+    });
   }
 
+  // ---------- Financial Info ----------
   if (updateData.financialInfo) {
-    for (const key in updateData.financialInfo) {
-      // handle nested existingLoan separately
-      if (key === "existingLoan") {
-        for (const loanKey in updateData.financialInfo.existingLoan) {
-          updateFields[`financialInfo.existingLoan.${loanKey}`] =
-            updateData.financialInfo.existingLoan[loanKey];
-        }
-      } else {
-        updateFields[`financialInfo.${key}`] = updateData.financialInfo[key];
+    const { existingLoan, ...rest } = updateData.financialInfo;
+
+    // Flatten main financial fields (annualIncome, valueOfLandOwnership, etc.)
+    Object.entries(rest).forEach(([key, value]) => {
+      updateFields[`financialInfo.${key}`] = value;
+    });
+
+    // Handle existingLoan separately
+    if (existingLoan) {
+      const { hasLoan, amount, loanAmount } = existingLoan;
+
+      if (typeof hasLoan !== "undefined") {
+        updateFields["financialInfo.existingLoan.hasLoan"] = hasLoan;
+      }
+
+      // Support both "amount" and "loanAmount"
+      if (typeof amount !== "undefined") {
+        updateFields["financialInfo.existingLoan.loanAmount"] = amount;
+      }
+      if (typeof loanAmount !== "undefined") {
+        updateFields["financialInfo.existingLoan.loanAmount"] = loanAmount;
       }
     }
   }
 
-  // Spread other top-level fields if needed (like profileImage, language, etc.)
+  // ---------- Other top-level fields ----------
   for (const key in updateData) {
     if (!["personalInfo", "address", "financialInfo"].includes(key)) {
       updateFields[key] = updateData[key];
     }
   }
 
-  const updatedUser = await User.findByIdAndUpdate(
+  // ---------- Perform Update ----------
+  let updatedUser = await User.findByIdAndUpdate(
     id,
     { $set: updateFields },
     { new: true, runValidators: true }
@@ -108,8 +123,36 @@ export const updateUser = async ({ id, ...updateData }) => {
     throw new Error("User not found");
   }
 
+  // ---------- Check Profile Completion ----------
+  const personalInfoComplete =
+    updatedUser.personalInfo?.firstName &&
+    updatedUser.personalInfo?.lastName &&
+    updatedUser.personalInfo?.dateOfBirth &&
+    updatedUser.personalInfo?.gender;
+
+  const addressComplete =
+    updatedUser.address?.address &&
+    updatedUser.address?.city &&
+    updatedUser.address?.state &&
+    updatedUser.address?.zipCode;
+
+  const financialInfoComplete =
+    updatedUser.financialInfo?.annualIncome &&
+    updatedUser.financialInfo?.valueOfLandOwnership &&
+    updatedUser.financialInfo?.electricityBill;
+
+  const isComplete = Boolean(
+    personalInfoComplete && addressComplete && financialInfoComplete
+  );
+
+  if (updatedUser.isComplete !== isComplete) {
+    updatedUser.isComplete = isComplete;
+    await updatedUser.save();
+  }
+
   return updatedUser;
 };
+
 
 
 // Delete user
