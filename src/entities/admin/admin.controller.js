@@ -39,7 +39,7 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       category
     } = req.query;
 
-    const query = { role: "USER" };
+    const query = { role: "USER", requestedLoan: { $gt: 0 } };
 
     if (minIncome || maxIncome) {
       query["financialInfo.annualIncome"] = {};
@@ -103,10 +103,10 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
-    const totalClients = await User.countDocuments({ role: "USER" });
-    const totalPending = await User.countDocuments({ "decision.status": "pending" , role: "USER" });
-    const totalApproved = await User.countDocuments({ "decision.status": "approved" , role: "USER" });
-    const totalRejected = await User.countDocuments({ "decision.status": "rejected" , role: "USER" });
+    const totalClients = await User.countDocuments({ role: "USER", requestedLoan: { $gt: 0 } });
+    const totalPending = await User.countDocuments({ "decision.status": "pending", role: "USER", requestedLoan: { $gt: 0 } });
+    const totalApproved = await User.countDocuments({ "decision.status": "approved", role: "USER", requestedLoan: { $gt: 0 } });
+    const totalRejected = await User.countDocuments({ "decision.status": "rejected", role: "USER", requestedLoan: { $gt: 0 } });
 
     const paginationInfo = {
       totalUsers,
