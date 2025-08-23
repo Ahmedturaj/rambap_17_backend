@@ -81,6 +81,16 @@ export const calculateCreditScore = (user) => {
   breakdown.ratioDebtIncome = { score: ratioScore, max: 17 };
   totalScore += ratioScore;
 
+
+  //..............ratio rating...................
+
+  const ratioPercent =
+    user?.financialInfo?.existingLoan?.loanAmount && user?.financialInfo?.annualIncome
+      ? (user.financialInfo.existingLoan.loanAmount / user.financialInfo.annualIncome) * 100
+      : 0;
+
+  breakdown.ratioDebtIncomePercent = { ratioPercent };
+
   // ---------------- Percentages ----------------
   const maxScore = 100;
   const overallPercent = Math.round((totalScore / maxScore) * 100);
