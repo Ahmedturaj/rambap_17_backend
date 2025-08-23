@@ -31,7 +31,6 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       limit = 10,
       search = "",
       sort = "newest",
-      role,
       minIncome,
       maxIncome,
       minScore,
