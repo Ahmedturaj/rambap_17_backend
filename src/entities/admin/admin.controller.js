@@ -40,9 +40,7 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
       category
     } = req.query;
 
-    const query = {};
-
-    if (role) query.role = role;
+    const query = { role: "USER" };
 
     if (minIncome || maxIncome) {
       query["financialInfo.annualIncome"] = {};
