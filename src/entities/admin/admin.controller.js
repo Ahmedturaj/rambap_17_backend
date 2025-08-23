@@ -106,7 +106,7 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     const totalUsers = await User.countDocuments(query);
     const totalPages = Math.ceil(totalUsers / limit);
 
-    
+    const totalClients = await User.countDocuments({ role: "USER" });
     const totalPending = await User.countDocuments({ "decision.status": "pending" });
     const totalApproved = await User.countDocuments({ "decision.status": "approved" });
     const totalRejected = await User.countDocuments({ "decision.status": "rejected" });
@@ -119,7 +119,7 @@ export const getAllUsersControllerByAdmin = async (req, res) => {
     };
 
     const decisionCounts = {
-      totalUsers: totalUsers,
+      totalUsers: totalClients,
       pending: totalPending,
       approved: totalApproved,
       rejected: totalRejected
