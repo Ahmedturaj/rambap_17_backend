@@ -71,11 +71,12 @@ export const calculateCreditScore = (user) => {
   totalScore += landScore;
 
   // ---------------- Ratio Debt / Income ----------------
-  const ratio = income > 0 ? loan / income : undefined;
+  const ratio = income > 0 ? user.financialInfo.existingLoan.loanAmount / income : undefined;
   let ratioScore = 0;
   if (ratio === 0 || ratio === undefined || ratio < 0.1) ratioScore = 17;
   else if (ratio >= 0.1 && ratio <= 0.5) ratioScore = 5;
   else ratioScore = 0;
+
 
   breakdown.ratioDebtIncome = { score: ratioScore, max: 17 };
   totalScore += ratioScore;
