@@ -77,6 +77,7 @@ export const calculateCreditScore = (user) => {
   else if (ratio >= 0.1 && ratio <= 0.5) ratioScore = 5;
   else ratioScore = 0;
 
+
   breakdown.ratioDebtIncome = { score: ratioScore, max: 17 };
   totalScore += ratioScore;
 
