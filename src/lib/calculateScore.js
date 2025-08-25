@@ -96,9 +96,10 @@ export const calculateCreditScore = (user) => {
   const overallPercent = Math.round((totalScore / maxScore) * 100);
 
   // ---------------- Category ----------------
-  let category = "Faible";
+  let category = "Élevé";
   if (overallPercent >= 56 && overallPercent <= 79) category = "Moyen";
-  else if (overallPercent >= 80) category = "Élevé";
+  else if (overallPercent >= 80) category = "Faible";
+
 
   return {
     totalScore,
