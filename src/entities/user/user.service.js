@@ -123,34 +123,35 @@ export const updateUser = async ({ id, ...updateData }) => {
     throw new Error("User not found");
   }
 
-  // ---------- Check Profile Completion ----------
-  const personalInfoComplete =
-    updatedUser.personalInfo?.firstName &&
-    updatedUser.personalInfo?.lastName &&
-    updatedUser.personalInfo?.dateOfBirth &&
-    updatedUser.personalInfo?.gender;
+// ---------- Check Profile Completion ----------
+const personalInfoComplete =
+  updatedUser.personalInfo?.firstName &&
+  updatedUser.personalInfo?.lastName &&
+  updatedUser.personalInfo?.dateOfBirth &&
+  updatedUser.personalInfo?.gender;
 
-  const addressComplete =
-    updatedUser.address?.address &&
-    updatedUser.address?.city &&
-    updatedUser.address?.state &&
-    updatedUser.address?.zipCode;
+const addressComplete =
+  updatedUser.address?.address &&
+  updatedUser.address?.city &&
+  updatedUser.address?.state &&
+  updatedUser.address?.zipCode;
 
-  const financialInfoComplete =
-    updatedUser.financialInfo?.annualIncome &&
-    updatedUser.financialInfo?.valueOfLandOwnership &&
-    updatedUser.financialInfo?.electricityBill;
+const financialInfoComplete =
+  updatedUser.financialInfo?.annualIncome ||
+  updatedUser.financialInfo?.valueOfLandOwnership ||
+  updatedUser.financialInfo?.electricityBill;
 
-  const isComplete = Boolean(
-    personalInfoComplete && addressComplete && financialInfoComplete
-  );
+// ✅ If any section is complete, mark as complete
+const isComplete = Boolean(
+  personalInfoComplete || addressComplete || financialInfoComplete
+);
 
-  if (updatedUser.isComplete !== isComplete) {
-    updatedUser.isComplete = isComplete;
-    await updatedUser.save();
-  }
+if (updatedUser.isComplete !== isComplete) {
+  updatedUser.isComplete = isComplete;
+  await updatedUser.save();
+}
 
-  return updatedUser;
+return updatedUser;
 };
 
 
